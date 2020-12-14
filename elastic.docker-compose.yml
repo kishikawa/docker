@@ -1,0 +1,45 @@
+Session: 0                                                                0: root@vm201904251244:/etc/docker-compose                                                                  vm20180521-ce74_x86-64.localdomain | LA: 0.00 0.01 0.05 | Asia/Tokyo 2019-04-26 17:33:31
+# elastic search
+version: '2.2'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    container_name: es01
+    environment:
+      - node.name=es01
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata01:/var/lib/docker/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+
+  kibana:
+   image: docker.elastic.co/kibana/kibana:7.0.0
+   container_name: kibana01
+   ports:
+    - 5601:5601
+   environment:
+    - elasticsearch.hosts=http://0.0.0.0:9200/
+   links:
+    - es01:elasticsearch
+   networks:
+     - esnet
+   volumes:
+     - kibanadata01:/var/lib/docker/share/kibana/data
+
+volumes:
+  esdata01:
+    driver: local
+  kibanadata01:
+    driver: local
+
+networks:
+  esnet:
